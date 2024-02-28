@@ -1,7 +1,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-       http://www.springframework.org/schema/beans/spring-beans.xsd">
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring
+       http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <!-- Требуемые зависимости:
         com.oracle:aqapi
@@ -9,9 +11,20 @@
         org.springframework:spring-beans
         org.springframework:spring-jdbc
         org.springframework:spring-jms
+        org.apache.camel:camel-core
+        org.apache.camel:camel-spring
         org.apache.camel:camel-jms
+        org.apache.camel:camel-aqjms
     -->
 
+    <camelContext id="example-route-context" xmlns="http://camel.apache.org/schema/spring">
+        <route id="example_route" autoStartup="true">
+            <from uri="aqJms:DB_QUEUE"/>
+            <log message="Successfully received from Database"/>
+        </route>
+    </camelContext>
+
+    <!-- Чтение из очереди БД -->
     <bean id="aqJms" class="org.apache.camel.component.jms.JmsComponent" factory-method="jmsComponentAutoAcknowledge">
         <constructor-arg index="0" ref="cachingDbAQConnectionFactory"/>
         <property name="transacted" value="true"/>

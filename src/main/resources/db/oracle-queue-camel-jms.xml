@@ -8,8 +8,18 @@
         org.springframework:spring-context
         org.springframework:spring-beans
         org.springframework:spring-jdbc
+        org.apache.camel:camel-core
+        org.apache.camel:camel-spring
         org.apache.camel:camel-jms
+        org.apache.camel:camel-aqjms
     -->
+
+    <camelContext id="example-route-context" xmlns="http://camel.apache.org/schema/spring">
+        <route id="example_route" autoStartup="true">
+            <from uri="aqJms:DB_QUEUE"/>
+            <log message="Successfully received from Database"/>
+        </route>
+    </camelContext>
 
     <!-- Чтение из очереди БД -->
     <bean id="aqJms" class="org.apache.camel.component.jms.JmsComponent">
