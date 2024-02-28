@@ -1,0 +1,57 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Требуемые зависимости:
+        com.oracle:aqapi
+        org.springframework:spring-context
+        org.springframework:spring-beans
+        org.springframework:spring-jdbc
+        org.apache.camel:camel-jms
+    -->
+
+    <!-- Чтение из очереди БД -->
+    <bean id="aqJms" class="org.apache.camel.component.jms.JmsComponent">
+        <constructor-arg index="0" ref="aqTxConf"/>
+        <property name="transacted" value="true"/>
+    </bean>
+
+    <bean id="aqTxConf" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="aqCf"/>
+        <property name="transactionManager" ref="dbTransactionManager"/>
+        <property name="transacted" value="true"/>
+    </bean>
+
+    <bean id="aqCf" class="oracle.jms.AQjmsFactory" factory-method="getConnectionFactory">
+        <constructor-arg index="0" ref="dataSource"/>
+    </bean>
+
+    <bean id="dbTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="dataSource" class="oracle.ucp.jdbc.PoolDataSourceFactory" factory-method="getPoolDataSource">
+        <property name="serverName" value="hostname"/>
+        <property name="portNumber" value="port"/>
+        <property name="user" value="user"/>
+        <property name="password" value="password"/>
+        <property name="connectionFactoryClassName" value="oracle.jdbc.pool.OracleDataSource"/>
+        <property name="connectionPoolName" value="poolName"/>
+        <property name="minPoolSize" value="1"/>
+        <property name="maxPoolSize" value="20"/>
+        <property name="initialPoolSize" value="10"/>
+        <property name="inactiveConnectionTimeout" value="120"/>
+        <property name="validateConnectionOnBorrow" value="true"/>
+        <property name="SQLForValidateConnection" value="select 1 from dual"/>
+        <property name="maxStatements" value="10"/>
+        <property name="networkProtocol" value="tcp"/>
+        <property name="connectionWaitTimeout" value="10"/>
+        <property name="ConnectionFactoryProperties">
+            <props>
+                <prop key="driverType">thin</prop>
+                <prop key="serviceName">serviceName</prop>
+            </props>
+        </property>
+    </bean>
+</beans>

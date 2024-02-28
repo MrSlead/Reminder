@@ -1,0 +1,45 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Требуемые зависимости:
+        com.oracle:aqapi
+        org.springframework:spring-context
+        org.springframework:spring-beans
+        org.springframework:spring-jdbc
+        org.springframework:spring-jms
+        org.apache.camel:camel-jms
+    -->
+
+    <bean id="aqJms" class="org.apache.camel.component.jms.JmsComponent" factory-method="jmsComponentAutoAcknowledge">
+        <constructor-arg index="0" ref="cachingDbAQConnectionFactory"/>
+        <property name="transacted" value="true"/>
+    </bean>
+
+    <bean id="cachingDbAQConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+        <property name="targetConnectionFactory" ref="dbQueueCredentials"/>
+        <property name="sessionCacheSize" value="sessionSize"/>
+    </bean>
+
+    <bean id="dbQueueCredentials" class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter">
+        <property name="targetConnectionFactory" ref="aqCf"/>
+        <property name="username" value="user"/>
+        <property name="password" value="password"/>
+    </bean>
+
+    <bean id="aqCf" class="oracle.jms.AQjmsFactory" factory-method="getQueueConnectionFactory">
+        <constructor-arg index="0"
+                         value="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=hostname)(PORT=port))
+                         (CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=serviceName)))"/>
+        <constructor-arg index="1">
+            <props>
+                <prop key="MaxLimit">20</prop>
+                <prop key="MinLimit">20</prop>
+                <prop key="InitialLimit">20</prop>
+                <prop key="MaxStatementsLimit">100</prop>
+                <prop key="reconnectOnException">true</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+</beans>
